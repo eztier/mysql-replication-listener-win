@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003, 2011, 2013, Oracle and/or its affiliates. All rights
+Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights
 reserved.
 
 This program is free software; you can redistribute it and/or
@@ -18,53 +18,55 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 02110-1301  USA
 */
 
-#ifndef TCP_DRIVER_INCLUDED
-#define	TCP_DRIVER_INCLUDED
+#ifndef _TCP_DRIVER_H
+#define	_TCP_DRIVER_H
+
+#include <asio.hpp>
+//https://think-async.com/Asio/AsioAndBoostAsio?skin=clean.nat%2casio%2cpattern#What_are_the_differences_in_the
+
+#include <pthread.h>
+#include <functional>
 
 #include "binlog_driver.h"
+#include "bounded_buffer.h"
 #include "protocol.h"
-#include <my_global.h>
-#include <mysql.h>
-#ifdef min //definition of min() and max() in std and libmysqlclient
-           //can be/are different
-#undef min
-#endif
-#ifdef max
-#undef max
-#endif
-#include <cstring>
-#include <map>
+
 #define MAX_PACKAGE_SIZE 0xffffff
 
+using asio::ip::tcp;
 
 namespace mysql { namespace system {
+
+class Binlog_tcp_driver;
+struct Thread_data {
+    Binlog_tcp_driver *tcp_driver;
+};
 
 class Binlog_tcp_driver : public Binary_log_driver
 {
 public:
 
-    Binlog_tcp_driver(const std::string& user, const std::string& passwd,
-                      const std::string& host, uint port)
-      : Binary_log_driver("", 4), m_host(host), m_user(user), m_passwd(passwd),
-        m_port(port), m_waiting_event(0),
-        m_total_bytes_transferred(0), m_shutdown(false)
+ Binlog_tcp_driver(const std::string& user, const std::string& passwd,
+                   const std::string& host, unsigned long port)
+   : Binary_log_driver("", 4), m_host(host), m_user(user), m_passwd(passwd),
+    m_port(port), m_socket(NULL), m_waiting_event(0), m_event_loop(0),
+    m_total_bytes_transferred(0), m_shutdown(false), m_server_id(1),
+    m_event_queue(new bounded_buffer<Binary_log_event *>(50))
     {
     }
 
     ~Binlog_tcp_driver()
     {
-      delete m_mysql;
+        delete m_event_queue;
+        delete m_socket;
+        free(this->thread_data);
     }
 
     /**
      * Connect using previously declared connection parameters.
      */
     int connect();
-    /**
-     * Connect using previously declared conncetion parameters, and
-     * start reading from the binlog_file where starting_pos= offset
-     */
-    int connect(const std::string &binlog_filename, ulong offset);
+
     /**
      * Blocking wait for the next binary log event to reach the client
      */
@@ -74,18 +76,17 @@ public:
      * Reconnects to the master with a new binlog dump request.
      */
     int set_position(const std::string &str, unsigned long position);
-    /**
-     * Disconnect from the server. The io service must have been stopped before
-     * this function is called.
-     * The event queue is emptied.
-     */
-    int disconnect(void);
 
     int get_position(std::string *str, unsigned long *position);
+
+    int set_server_id(int server_id);
+    
     const std::string& user() const { return m_user; }
     const std::string& password() const { return m_passwd; }
     const std::string& host() const { return m_host; }
-    uint port() const { return m_port; }
+    unsigned long port() const { return m_port; }
+
+    static void *start(void *data);
 
 protected:
     /**
@@ -103,11 +104,57 @@ protected:
      *   @retval >1 An error occurred.
      */
     int connect(const std::string& user, const std::string& passwd,
-                const std::string& host, uint port,
-                const std::string& binlog_filename= "", size_t offset= 4);
+                const std::string& host, long port,
+                const std::string& binlog_filename="", size_t offset=4);
 
 private:
-    void start_binlog_dump(const char *binlog, size_t offset);
+
+    /**
+     * Request a binlog dump and starts the event loop in a new thread
+     * @param binlog_file_name The base name of the binlog files to query
+     *
+     */
+    void start_binlog_dump(const std::string &binlog_file_name, size_t offset);
+
+    /**
+     * Handles a completed mysql server package header and put a
+     * request for the body in the job queue.
+     */
+    
+    void handle_net_packet_header(const asio::error_code& err, std::size_t bytes_transferred);
+
+    /**
+     * Handles a completed network package with the assumption that it contains
+     * a binlog event.
+     *
+     * TODO rename to handle_event_log_packet?
+     */
+    void handle_net_packet(const asio::error_code& err, std::size_t bytes_transferred);
+
+    /**
+     * Called from handle_net_packet(). The function handle a stream of bytes
+     * representing event packets which may or may not be complete.
+     * It uses m_waiting_event and the size of the stream as parameters
+     * in a state machine. If there is no m_waiting_event then the event
+     * header must be parsed for the event packet length. This can only
+     * be done if the accumulated stream of bytes are more than 19.
+     * Next, if there is a m_waiting_event, it can only be completed if
+     * event_length bytes are waiting on the stream.
+     *
+     * If none of these conditions are fullfilled, the function exits without
+     * any action.
+     *
+     * @param err Not used
+     * @param bytes_transferred The number of bytes waiting in the event stream
+     *
+     */
+    void handle_event_packet(const asio::error_code& err, std::size_t bytes_transferred);
+
+    /**
+     * Executes io_service in a loop.
+     * TODO Checks for connection errors and reconnects to the server
+     * if necessary.
+     */
     void start_event_loop(void);
 
     /**
@@ -116,12 +163,38 @@ private:
     void reconnect(void);
 
     /**
+     * Disconnet from the server. The io service must have been stopped before
+     * this function is called.
+     * The event queue is emptied.
+     */
+    int disconnect();
+
+    /**
      * Terminates the io service and sets the shudown flag.
      * this causes the event loop to terminate.
      */
     void shutdown(void);
 
+    pthread_t *m_event_loop;
+    asio::io_service m_io_service;
+    tcp::socket *m_socket;
     bool m_shutdown;
+    // slave server id
+    int m_server_id;
+    /**
+     * Temporary storage for a handshake package
+     */
+    st_handshake_package m_handshake_package;
+
+    /**
+     * Temporary storage for an OK package
+     */
+    st_ok_package m_ok_package;
+
+    /**
+     * Temporary storage for an error package
+     */
+    st_error_package m_error_package;
 
     /**
      * each bin log event starts with a 19 byte long header
@@ -139,6 +212,7 @@ private:
      *
      */
     uint8_t m_net_packet[MAX_PACKAGE_SIZE];
+    asio::streambuf m_event_stream_buffer;
     char * m_event_packet;
 
     /**
@@ -148,14 +222,41 @@ private:
      * constructed yet.
      */
     Log_event_header *m_waiting_event;
-    Log_event_header m_log_event_header;
+
+    /**
+     * A ring buffer used to dispatch aggregated events to the user application
+     */
+    bounded_buffer<Binary_log_event *> *m_event_queue;
 
     std::string m_user;
     std::string m_host;
     std::string m_passwd;
-    uint m_port;
-    MYSQL *m_mysql;
+    long m_port;
+
     uint64_t m_total_bytes_transferred;
+    struct mysql::system::Thread_data *thread_data;
+};
+
+class Read_handler {
+public:
+    void (Binlog_tcp_driver:: *method)(const asio::error_code& err, std::size_t bytes_transferred);
+    Binlog_tcp_driver *tcp_driver;
+
+    void operator()(const asio::error_code& err, std::size_t bytes_transferred)
+    {
+        (tcp_driver->*method)(err, bytes_transferred);
+    }
+};
+
+class Shutdown_handler {
+public:
+    void (Binlog_tcp_driver:: *method)();
+    Binlog_tcp_driver *tcp_driver;
+
+    void operator()()
+    {
+        (tcp_driver->*method)();
+    }
 };
 
 /**
@@ -164,17 +265,22 @@ private:
  *
  * @return False if the operation succeeded, true if it failed.
  */
-bool fetch_master_status(MYSQL *mysql, std::string *filename,
-                         unsigned long *position);
+bool fetch_master_status(tcp::socket *socket, std::string *filename, unsigned long *position);
+/**
+ * Sends a SHOW BINARY LOGS command to the server and stores the file
+ * names and sizes in a map.
+ */
+bool fetch_binlogs_name_and_size(tcp::socket *socket, std::map<std::string, unsigned long> &binlog_map);
 
-bool fetch_binlog_name_and_size(MYSQL *mysql, std::map<std::string, unsigned long> *binlog_map);
+int authenticate(tcp::socket *socket, const std::string& user,
+                 const std::string& passwd,
+                 const st_handshake_package &handshake_package);
 
-int sync_connect_and_authenticate(MYSQL *mysql, const std::string &user,
-                                  const std::string &passwd,
-                                  const std::string &host, uint port,
-                                  long offset= 4);
+tcp::socket *
+sync_connect_and_authenticate(asio::io_service &io_service, const std::string &user,
+                              const std::string &passwd, const std::string &host, long port, int server_id);
+
+
 } }
 
-
-
-#endif	/* TCP_DRIVER_INCLUDED */
+#endif	/* _TCP_DRIVER_H */

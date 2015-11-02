@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003, 2011, 2013, Oracle and/or its affiliates. All rights
+Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights
 reserved.
 
 This program is free software; you can redistribute it and/or
@@ -17,12 +17,12 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 02110-1301  USA
 */
-#ifndef ROW_OF_FIELDS_INCLUDED
-#define	ROW_OF_FIELDS_INCLUDED
+#ifndef _ROW_OF_FIELDS_H
+#define	_ROW_OF_FIELDS_H
 
-#include "value.h"
 #include <vector>
 #include <iostream>
+#include "value.h"
 
 using namespace mysql;
 
@@ -45,4 +45,4 @@ private:
 
 }
 
-#endif	/* ROW_OF_FIELDS_INCLUDED */
+#endif	/* _ROW_OF_FIELDS_H */

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003, 2011, 2013, Oracle and/or its affiliates. All rights
+Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights
 reserved.
 
 This program is free software; you can redistribute it and/or
@@ -17,58 +17,78 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 02110-1301  USA
 */
-#include "protocol.h"
-#include "transitional_methods.h"
-#include "binlog_api.h"
-#include <my_global.h>
-#include <mysql_com.h>
-#include <iostream>
 #include <stdint.h>
 #include <vector>
+#include <iostream>
+
+#include "protocol.h"
 
 using namespace mysql;
 using namespace mysql::system;
-using namespace std;
+
 namespace mysql { namespace system {
 
-
-
-/**
-  Checks the Format Description event to determine if the master
-  has binlog checksums enabled or not.
-*/
-int check_checksum_value(mysql::Binary_log_event **event)
+int proto_read_package_header(tcp::socket *socket, unsigned long *packet_length, unsigned char *packet_no)
 {
+  unsigned char buf[4];
 
-  Format_event *fdev= static_cast<Format_event*>(*event);
-
-  uchar version_split[3];
-  do_server_version_split((fdev->master_version).c_str(), version_split);
-  if (version_product(version_split) >= checksum_version_product)
+  try {
+    asio::read(*socket, asio::buffer(buf, 4),
+                        asio::transfer_at_least(4));
+  } catch (asio::system_error e)
   {
-    /*
-      Last four bytes is the check sum value which is to be removed
-      from post_header_len.
-    */
-    fdev->post_header_len.erase(fdev->post_header_len.end() -
-                                BINLOG_CHECKSUM_LEN,
-                                fdev->post_header_len.end());
-
-    // Last element in post_header_len is the checksum algorithm descriptor.
-    if ((int)fdev->post_header_len.back() ==
-        mysql::system::BINLOG_CHECKSUM_ALG_CRC32)
-      return mysql::ERR_CHECKSUM_ENABLED;
+    return 1;
   }
-  return mysql::ERR_OK;
+  *packet_length=  (unsigned long)(buf[0] &0xFF);
+  *packet_length+= (unsigned long)((buf[1] &0xFF)<<8);
+  *packet_length+= (unsigned long)((buf[2] &0xFF)<<16);
+  *packet_no= (unsigned char)buf[3];
+  return 0;
+}
+
+int proto_read_package_header(tcp::socket *socket, asio::streambuf &buff, unsigned long *packet_length, unsigned char *packet_no)
+{
+  std::streamsize inbuff= buff.in_avail();
+  if( inbuff < 0)
+    inbuff= 0;
+
+  if (4 > inbuff)
+  {
+    try {
+      asio::read(*socket, buff,
+                        asio::transfer_at_least(4-inbuff));
+    } catch (asio::system_error e)
+    {
+      return 1;
+    }
+  }
+  char ch;
+  std::istream is(&buff);
+  is.get(ch);
+  *packet_length = (unsigned long)ch;
+  is.get(ch);
+  *packet_length += (unsigned long)(ch<<8);
+  is.get(ch);
+  *packet_length += (unsigned long)(ch<<16);
+  is.get(ch);
+  *packet_no= (unsigned char)ch;
+  return 0;
 }
 
 
-int proto_get_one_package(MYSQL *mysql, char *buff,
-                           uint8_t *packet_no)
+int proto_get_one_package(tcp::socket *socket, asio::streambuf &buff,
+                          uint8_t *packet_no)
 {
-  ulong packet_length;
-  packet_length= cli_safe_read(mysql);
-  buff= (char*)mysql->net.buff;
+  unsigned long packet_length;
+  if (proto_read_package_header(socket, buff, &packet_length, packet_no))
+    return 0;
+  std::streamsize inbuffer= buff.in_avail();
+  if (inbuffer < 0)
+    inbuffer= 0;
+  if (packet_length > inbuffer)
+    asio::read(*socket, buff,
+                      asio::transfer_at_least(packet_length-inbuffer));
+
   return packet_length;
 }
 
@@ -76,28 +96,30 @@ void prot_parse_error_message(std::istream &is, struct st_error_package &err,
                               int packet_length)
 {
   uint8_t marker;
-
+  int message_size;
+  
   Protocol_chunk<uint16_t> prot_errno(err.error_code);
   Protocol_chunk<uint8_t>  prot_marker(marker);
-  Protocol_chunk<uint8_t>  prot_sql_state(err.sql_state,5);
 
   is >> prot_errno
-     >> prot_marker
-     >> prot_sql_state;
+     >> prot_marker;
 
-    // TODO is the number of bytes read = is.tellg() ?
-
-  int message_size= packet_length -2 -1 -5; // the remaining part of the package
+  // TODO is the number of bytes read = is.tellg() ?
+  if(marker == '#') {
+    Protocol_chunk<uint8_t>  prot_sql_state(err.sql_state,5);
+    is >> prot_sql_state;
+    message_size = packet_length - 2 - 1 - 5;
+  } else {
+    message_size= packet_length - 2 - 1; // the remaining part of the package
+  }
   Protocol_chunk_string prot_message(err.message, message_size);
   is >> prot_message;
   err.message[message_size]= '\0';
 }
 
-void prot_parse_ok_message(std::istream &is, struct st_ok_package &ok,
-                           int packet_length)
+void prot_parse_ok_message(std::istream &is, struct st_ok_package &ok, int packet_length)
 {
- // TODO: Assure that zero length messages can be but on the input stream.
-
+  // TODO: Assure that zero length messages can be but on the input stream.
   //Protocol_chunk<uint8_t>  prot_result_type(result_type);
   Protocol_chunk<uint64_t> prot_affected_rows(ok.affected_rows);
   Protocol_chunk<uint64_t> prot_insert_id(ok.insert_id);
@@ -164,13 +186,15 @@ void proto_get_handshake_package(std::istream &is,
   //assert(filler == 0);
 
   int remaining_bytes= packet_length - 9+13+13+8;
-  uint8_t extention_buffer[remaining_bytes];
+  //uint8_t extention_buffer[remaining_bytes];
+  uint8_t* extention_buffer = new uint8_t[remaining_bytes];
   if (remaining_bytes > 0)
   {
     Protocol_chunk<uint8_t> proto_extension(extention_buffer, remaining_bytes);
     is >> proto_extension;
   }
-
+  delete extention_buffer;
+  //std::copy(&extention_buffer[0],&extention_buffer[remaining_bytes],std::ostream_iterator<char>(std::cout,","));
 }
 
 void write_packet_header(char *buff, uint16_t size, uint8_t packet_no)
@@ -277,7 +301,7 @@ std::istream &operator>>(std::istream &is, Protocol_chunk_string &str)
     is.get(ch);
     str.m_str->at(ct)= ch;
   }
-
+  
   return is;
 }
 
@@ -295,45 +319,10 @@ std::istream &operator>>(std::istream &is, Protocol_chunk_string_len &lenstr)
 std::ostream &operator<<(std::ostream &os, Protocol &chunk)
 {
   if (!os.bad())
-    os.write((const char *) chunk.data(),chunk.size());
+    os.write((const char *) chunk.data(), chunk.size());
   return os;
 }
 
-/* Removes trailing whitspaces from the input string */
-void trim2(std::string& str)
-{
-  std::string::size_type pos = str.find_last_not_of('\0');
-  if (pos != std::string::npos)
-    str.erase(pos + 1);
-  else
-    str.clear();
-}
-
-Format_event *proto_format_desc_event(std::istream &is, Log_event_header *header)
-{
-  Format_event *fdev= new Format_event(header);
-  int event_length= (fdev->header())->event_length;
-  Protocol_chunk<uint16_t> proto_format_event_binlog_version(fdev->binlog_version);
-  Protocol_chunk_string proto_format_event_master_version(fdev->master_version, 50);
-  Protocol_chunk<uint32_t> proto_format_event_created_ts(fdev->created_ts);
-  Protocol_chunk<uint8_t> proto_format_event_header_len(fdev->log_header_len);
-  Protocol_chunk_vector proto_format_event_post_header(fdev->post_header_len,
-                                                       event_length - 76);
-  is >> proto_format_event_binlog_version
-     >> proto_format_event_master_version
-     >> proto_format_event_created_ts
-     >> proto_format_event_header_len
-     >> proto_format_event_post_header;
-
-  /*
-    Add an element at the beginning of the vector for UNKNOWN_EVENT
-    in Log_event_type.
-  */
-  fdev->post_header_len.insert(fdev->post_header_len.begin(), 0);
-  trim2(fdev->master_version);
-  return fdev;
-
-}
 Query_event *proto_query_event(std::istream &is, Log_event_header *header)
 {
   uint8_t db_name_len;
@@ -341,6 +330,7 @@ Query_event *proto_query_event(std::istream &is, Log_event_header *header)
   // Length of query stored in the payload.
   uint32_t query_len;
   Query_event *qev=new Query_event(header);
+
   Protocol_chunk<uint32_t> proto_query_event_thread_id(qev->thread_id);
   Protocol_chunk<uint32_t> proto_query_event_exec_time(qev->exec_time);
   Protocol_chunk<uint8_t> proto_query_event_db_name_len(db_name_len);
@@ -364,8 +354,8 @@ Query_event *proto_query_event(std::istream &is, Log_event_header *header)
         Execution time (pre-defined, 4) +
         Placeholder to store database length (pre-defined, 1) +
         Error code (pre-defined, 2) +
-        Placeholder to store length taken by status variable blk
-        (pre-defined, 2)+ Status variable block length (calculated, var_size) +
+        Placeholder to store length taken by status variable blk (pre-defined, 2) +
+        Status variable block length (calculated, var_size) +
         Database name length (calculated, db_name_len) +
         Null terninator (pre-defined, 1) +
     )
@@ -381,18 +371,17 @@ Query_event *proto_query_event(std::istream &is, Log_event_header *header)
   is >> proto_payload;
 
   Protocol_chunk_string proto_query_event_db_name(qev->db_name,
-                                                  (ulong)db_name_len);
+                                                  (unsigned long)db_name_len);
 
   Protocol_chunk_string proto_query_event_query_str
-    (qev->query, (ulong)query_len);
+    (qev->query, (unsigned long)query_len);
 
-  char zero_marker;
+  char zero_marker; // should always be 0;
   is >> proto_query_event_db_name
      >> zero_marker
      >> proto_query_event_query_str;
   // Following is not really required now,
-  //qev->query.resize(qev->query.size() - 1);
-  // Last character is a '\0' character.
+  //qev->query.resize(qev->query.size() - 1); // Last character is a '\0' character.
 
   return qev;
 }
@@ -411,8 +400,7 @@ Rotate_event *proto_rotate_event(std::istream &is, Log_event_header *header)
   return rev;
 }
 
-Incident_event *proto_incident_event(std::istream &is,
-                                     Log_event_header *header)
+Incident_event *proto_incident_event(std::istream &is, Log_event_header *header)
 {
   Incident_event *incident= new Incident_event(header);
   Protocol_chunk<uint8_t> proto_incident_code(incident->type);
@@ -434,60 +422,35 @@ Row_event *proto_rows_event(std::istream &is, Log_event_header *header)
     uint8_t bytes[6];
   } table_id;
 
-  int bytes_read;
-  table_id.integer= 0L;
+  table_id.integer=0L;
   Protocol_chunk<uint8_t>  proto_table_id(&table_id.bytes[0], 6);
   Protocol_chunk<uint16_t> proto_flags(rev->flags);
-
-  is >> proto_table_id
-     >> proto_flags;
-
-  bytes_read= proto_table_id.size() + proto_flags.size();
-
-  if (header->type_code == WRITE_ROWS_EVENT ||
-      header->type_code == DELETE_ROWS_EVENT ||
-      header->type_code == UPDATE_ROWS_EVENT)
-  {
-    /*
-      Have variable length header, check length,
-      which includes length bytes
-    */
-    Protocol_chunk<uint16_t> proto_var_header_len(rev->var_header_len);
-    is >> proto_var_header_len;
-
-    if (rev->var_header_len < 2)
-      return NULL;
-
-    Protocol_chunk_vector proto_extra_header_data(rev->extra_header_data,
-                                                  rev->var_header_len - 2);
-    is >> proto_extra_header_data;
-
-    bytes_read+= proto_var_header_len.size() + proto_extra_header_data.size();
-  }
-
   Protocol_chunk<uint64_t> proto_column_len(rev->columns_len);
   proto_column_len.set_length_encoded_binary(true);
 
-  is >> proto_column_len;
+  is >> proto_table_id
+     >> proto_flags
+     >> proto_column_len;
 
-  rev->table_id=table_id.integer;
+  rev->table_id = table_id.integer;
   int used_column_len=(int) ((rev->columns_len + 7) / 8);
   Protocol_chunk_vector proto_used_columns(rev->used_columns, used_column_len);
   rev->null_bits_len= used_column_len;
 
   is >> proto_used_columns;
-  bytes_read+= proto_column_len.size() + used_column_len;
 
-  if (header->type_code == UPDATE_ROWS_EVENT ||
-      header->type_code == UPDATE_ROWS_EVENT_V1)
+  if (header->type_code == UPDATE_ROWS_EVENT)
   {
-    Protocol_chunk_vector proto_columns_before_image(rev->columns_before_image,
-                                                     used_column_len);
+    Protocol_chunk_vector proto_columns_before_image(rev->columns_before_image, used_column_len);
     is >> proto_columns_before_image;
-    bytes_read+=used_column_len;
   }
 
-  ulong row_len= header->event_length - bytes_read - LOG_EVENT_HEADER_SIZE + 1;
+  int bytes_read=proto_table_id.size() + proto_flags.size() + proto_column_len.size() + used_column_len;
+  if (header->type_code == UPDATE_ROWS_EVENT)
+    bytes_read+=used_column_len;
+
+  unsigned long row_len= header->event_length - bytes_read - LOG_EVENT_HEADER_SIZE + 1;
+  //std::cout << "Bytes read: " << bytes_read << " Bytes expected: " << row_len << std::endl;
   Protocol_chunk_vector proto_row(rev->row, row_len);
   is >> proto_row;
 
@@ -538,10 +501,9 @@ User_var_event *proto_uservar_event(std::istream &is, Log_event_header *header)
   return event;
 }
 
-Table_map_event *proto_table_map_event(std::istream &is,
-                                       Log_event_header *header)
+Table_map_event *proto_table_map_event(std::istream &is, Log_event_header *header)
 {
-  Table_map_event *tmev= new Table_map_event(header);
+  Table_map_event *tmev=new Table_map_event(header);
   uint64_t columns_len= 0;
   uint64_t metadata_len= 0;
   union
@@ -551,7 +513,7 @@ Table_map_event *proto_table_map_event(std::istream &is,
   } table_id;
   char zero_marker= 0;
 
-  table_id.integer= 0L;
+  table_id.integer=0L;
   Protocol_chunk<uint8_t> proto_table_id(&table_id.bytes[0], 6);
   Protocol_chunk<uint16_t> proto_flags(tmev->flags);
   Protocol_chunk_string_len proto_db_name(tmev->db_name);
@@ -567,16 +529,16 @@ Table_map_event *proto_table_map_event(std::istream &is,
      >> proto_table_name
      >> proto_marker
      >> proto_columns_len;
-  tmev->table_id= table_id.integer;
+  tmev->table_id=table_id.integer;
   Protocol_chunk_vector proto_columns(tmev->columns, columns_len);
   Protocol_chunk<uint64_t> proto_metadata_len(metadata_len);
   proto_metadata_len.set_length_encoded_binary(true);
 
   is >> proto_columns
      >> proto_metadata_len;
-  Protocol_chunk_vector proto_metadata(tmev->metadata, (ulong)metadata_len);
+  Protocol_chunk_vector proto_metadata(tmev->metadata, (unsigned long)metadata_len);
   is >> proto_metadata;
-  ulong null_bits_len= (int)((tmev->columns.size() + 7) / 8);
+  unsigned long null_bits_len=(int) ((tmev->columns.size() + 7) / 8);
 
   Protocol_chunk_vector proto_null_bits(tmev->null_bits, null_bits_len);
 
@@ -586,8 +548,8 @@ Table_map_event *proto_table_map_event(std::istream &is,
 
 std::istream &operator>>(std::istream &is, Protocol_chunk_vector &chunk)
 {
-  ulong size= chunk.m_size;
-  for(int i= 0; i < size; i++)
+  unsigned long size= chunk.m_size;
+  for(int i=0; i< size; i++)
   {
     char ch;
     is.get(ch);

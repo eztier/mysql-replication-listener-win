@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003, 2011, 2013, Oracle and/or its affiliates. All rights
+Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights
 reserved.
 
 This program is free software; you can redistribute it and/or
@@ -18,20 +18,16 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 02110-1301  USA
 */
 
-#ifndef VALUE_ADAPTER_INCLUDED
-#define	VALUE_ADAPTER_INCLUDED
+#ifndef _VALUE_ADAPTER_H
+#define	_VALUE_ADAPTER_H
 
+#include <stdint.h>
 #include "protocol.h"
-#include <my_global.h>
-#include <mysql.h>
-#include <climits>
 #include <iostream>
-#define MAX_TIME_WIDTH 10
-#define MAX_DATETIME_WIDTH 19
-#define DATETIME_MAX_DECIMALS 6
 
 using namespace mysql;
 namespace mysql {
+
 /**
  This helper function calculates the size in bytes of a particular field in a
  row type event as defined by the field_ptr and metadata_ptr arguments.
@@ -44,13 +40,13 @@ namespace mysql {
 
  @return The size in bytes of a particular field
 */
-uint32_t calc_field_size(unsigned char column_type, const unsigned char *field_ptr,
-                    uint32_t metadata);
+int calc_field_size(enum mysql::system::enum_field_types column_type, const unsigned char *field_ptr,
+                    uint16_t metadata);
 
+uint8_t calc_newdecimal_size(uint8_t m, uint8_t d);
 
 /**
- * A value object class which encapsluate a tuple
- * (value type, metadata, storage)
+ * A value object class which encapsluate a tuple (value type, metadata, storage)
  * and provide for views to this storage through a well defined interface.
  *
  * Can be used with a Converter to convert between different Values.
@@ -58,20 +54,30 @@ uint32_t calc_field_size(unsigned char column_type, const unsigned char *field_p
 class Value
 {
 public:
-    Value(enum_field_types type, uint32_t metadata, const char *storage) :
+    Value(enum system::enum_field_types type, uint16_t metadata, const char *storage) :
       m_type(type), m_storage(storage), m_metadata(metadata), m_is_null(false)
     {
-      m_size= calc_field_size((unsigned char)type,
+      m_size = calc_field_size(type,
                               (const unsigned char*)storage,
                               metadata);
+      // metadata: 16bits, lower byte is real type, high byte is length
+      if (type == mysql::system::MYSQL_TYPE_STRING) {
+          enum system::enum_field_types lower = (enum system::enum_field_types)(metadata & 0xFF);
+          if (lower == mysql::system::MYSQL_TYPE_SET
+             || lower == mysql::system::MYSQL_TYPE_ENUM) {
+            m_type     = lower;
+            m_metadata = (metadata >> 8U);
+          }
+      }
+      // std::cout << "TYPE: " << type << " SIZE: " << m_size << std::endl;
     };
 
     Value()
     {
-      m_size= 0;
-      m_storage= 0;
-      m_metadata= 0;
-      m_is_null= false;
+      m_size     = 0;
+      m_storage  = 0;
+      m_metadata = 0;
+      m_is_null  = false;
     }
 
     /**
@@ -85,7 +91,7 @@ public:
 
     ~Value() {}
 
-    void is_null(bool s) { m_is_null= s; }
+    void is_null(bool s) { m_is_null = s; }
     bool is_null(void) const { return m_is_null; }
 
     const char *storage() const { return m_storage; }
@@ -94,9 +100,9 @@ public:
      * Get the length in bytes of the entire storage (any metadata part +
      * atual data)
      */
-    uint32_t length() const { return m_size; }
-    enum_field_types type() const { return m_type; }
-    uint32_t metadata() const { return m_metadata; }
+    size_t length() const { return m_size; }
+    enum system::enum_field_types type() const { return m_type; }
+    uint16_t metadata() const { return m_metadata; }
 
     /**
      * Returns the integer representation of a storage of a pre-specified
@@ -147,16 +153,18 @@ public:
     double as_double() const;
 
 private:
-    enum_field_types m_type;
-    uint32_t m_size;
-		const char *m_storage;
-    uint32_t m_metadata;
+    enum system::enum_field_types m_type;
+    size_t m_size;
+    const char *m_storage;
+    uint16_t m_metadata;
     bool m_is_null;
 };
 
 class Converter
 {
 public:
+
+    void to(long long &out, const Value &val) const;
     /**
      * Converts and copies the sql value to a std::string object.
      * @param[out] str The target string
@@ -181,4 +189,4 @@ public:
 
 
 } // end namespace mysql
-#endif	/* VALUE_ADAPTER_INCLUDED */
+#endif	/* _VALUE_ADAPTER_H */

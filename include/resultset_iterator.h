@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003, 2011, 2013, Oracle and/or its affiliates. All rights
+Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights
 reserved.
 
 This program is free software; you can redistribute it and/or
@@ -18,18 +18,48 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 02110-1301  USA
 */
 
-#ifndef RESULTSET_ITERATOR_INCLUDED
-#define	RESULTSET_ITERATOR_INCLUDED
+#ifndef _RESULTSET_ITERATOR_H
+#define	_RESULTSET_ITERATOR_H
+
+#include <iostream>
+#include <iterator>
+#include <asio.hpp>
 
 #include "value.h"
 #include "rowset.h"
 #include "row_of_fields.h"
-#include <iostream>
 
 using namespace mysql;
 
 namespace mysql
 {
+
+struct Field_packet
+{
+    std::string catalog;  // Length Coded String
+    std::string db;       // Length Coded String
+    std::string table;    // Length Coded String
+    std::string org_table;// Length Coded String
+    std::string name;     // Length Coded String
+    std::string org_name; // Length Coded String
+    uint8_t marker;       // filler
+    uint16_t charsetnr;   // charsetnr
+    uint32_t length;      // length
+    uint8_t type;         // field type
+    uint16_t flags;
+    uint8_t decimals;
+    uint16_t filler;      // filler, always 0x00
+    //uint64_t default_value;  // Length coded binary; only in table descr.
+};
+
+typedef std::list<std::string *> String_storage;
+
+namespace system {
+    void digest_result_header(std::istream &is, uint64_t &field_count, uint64_t extra);
+    void digest_field_packet(std::istream &is, Field_packet &field_packet);
+    void digest_marker(std::istream &is);
+    void digest_row_content(std::istream &is, int field_count, Row_of_fields &row, String_storage &storage, bool &is_eof);
+}
 
 template <class T>
 class Result_set_iterator;
@@ -40,30 +70,51 @@ public:
     typedef Result_set_iterator<Row_of_fields > iterator;
     typedef Result_set_iterator<Row_of_fields const > const_iterator;
 
-    Result_set(MYSQL *mysql)
-    : m_mysql(mysql)
-    {
-    }
+    Result_set(tcp::socket *socket) { source(socket); }
+    void source(tcp::socket *socket) { m_socket= socket; digest_row_set(); }
     iterator begin();
     iterator end();
     const_iterator begin() const;
     const_iterator end() const;
+    ~Result_set() {
+      for (String_storage::iterator it=m_storage.begin(); it != m_storage.end(); ++it) {
+        delete *it;
+      }
+      m_storage.clear();
+    }
 
 private:
+    void digest_row_set();
     friend class Result_set_iterator<Row_of_fields >;
     friend class Result_set_iterator<Row_of_fields const>;
+
+    std::vector<Field_packet > m_field_types;
     int m_row_count;
     std::vector<Row_of_fields > m_rows;
-    MYSQL *m_mysql;
+    String_storage m_storage;
+    tcp::socket *m_socket;
+    typedef enum { RESULT_HEADER,
+                   FIELD_PACKETS,
+                   MARKER,
+                   ROW_CONTENTS,
+                   EOF_PACKET
+                 } state_t;
+    state_t m_current_state;
+
     /**
      * The number of fields in the field packets block
      */
     uint64_t m_field_count;
+    /**
+     * Used for SHOW COLUMNS to return the number of rows in the table
+     */
+    uint64_t m_extra;
 };
 
 template <class Iterator_value_type >
-class Result_set_iterator :public std::iterator<std::forward_iterator_tag,
-                                                Iterator_value_type>
+class Result_set_iterator :
+  public std::iterator<std::bidirectional_iterator_tag,
+                                Iterator_value_type>
 {
 public:
     Result_set_iterator() : m_feeder(0), m_current_row(-1)
@@ -75,65 +126,89 @@ public:
       increment();
     }
 
-    Iterator_value_type operator*()
+    Iterator_value_type & operator*()
     {
-      return m_feeder->m_rows[m_current_row];
+        return m_feeder->m_rows[m_current_row];
     }
 
-
-    void operator++()
+    Result_set_iterator & operator++()
     {
-      if (++m_current_row >= m_feeder->m_row_count)
-        m_current_row= -1;
+        increment();
+        return *this;
     }
 
-
-    void operator++(int)
+    Result_set_iterator & operator++(int)
     {
-      if (++m_current_row >= m_feeder->m_row_count)
-        m_current_row= -1;
+        increment();
+        return *this;
     }
 
-
-    bool operator!=(const Result_set_iterator& other) const
+    bool operator!=(const Result_set_iterator& it)
     {
-      if (other.m_feeder == 0 && m_feeder == 0)
-        return false;
+        return !equal(it);
+    }
 
-      if (other.m_feeder == 0)
-        return m_current_row != -1;
-
-      if (m_feeder == 0)
-        return other.m_current_row != -1;
-
-      if (other.m_feeder->m_field_count != m_feeder->m_field_count)
-        return true;
-
-      Iterator_value_type *row1= &m_feeder->m_rows[m_current_row];
-      Iterator_value_type *row2= &other.m_feeder->m_rows[m_current_row];
-      for (unsigned int i= 0; i< m_feeder->m_field_count; ++i)
-      {
-        Value val1= row1->at(i);
-        Value val2= row2->at(i);
-        if (val1 != val2)
-          return true;
-      }
-      return false;
+    bool operator==(const Result_set_iterator& it)
+    {
+        return equal(it);
     }
 
  private:
+
     void increment()
     {
       if (++m_current_row >= m_feeder->m_row_count)
         m_current_row= -1;
     }
 
+    bool equal(const Result_set_iterator& other) const
+    {
+        if (other.m_feeder == 0 && m_feeder == 0)
+            return true;
+        if (other.m_feeder == 0)
+        {
+            if (m_current_row == -1)
+                return true;
+            else
+                return false;
+        }
+        if (m_feeder == 0)
+        {
+            if (other.m_current_row == -1)
+                return true;
+            else
+                return false;
+        }
+
+        if( other.m_feeder->m_field_count != m_feeder->m_field_count)
+            return false;
+
+        Iterator_value_type *row1= &m_feeder->m_rows[m_current_row];
+        Iterator_value_type *row2= &other.m_feeder->m_rows[m_current_row];
+        for (unsigned i=0; i< m_feeder->m_field_count; ++i)
+        {
+            Value val1= row1->at(i);
+            Value val2= row2->at(i);
+            if (val1 != val2)
+                return false;
+        }
+        return true;
+    }
+
+    Iterator_value_type & dereference() const
+    {
+        return m_feeder->m_rows[m_current_row];
+    }
+
+private:
     Result_set *m_feeder;
     int m_current_row;
+
 };
+
 
 } // end namespace mysql
 
 
 
-#endif	/* RESULTSET_ITERATOR_INCLUDED */
+#endif	/* _RESULTSET_ITERATOR_H */

@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2003, 2011, 2013, Oracle and/or its affiliates. All rights
+Copyright (c) 2003, 2011, Oracle and/or its affiliates. All rights
 reserved.
 
 This program is free software; you can redistribute it and/or
@@ -18,42 +18,23 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA
 02110-1301  USA
 */
 
-#include "binlog_api.h"
 #include <list>
+
+#include "binlog_api.h"
 
 using namespace mysql;
 using namespace mysql::system;
+
 namespace mysql
 {
-/*
-  Get a string describing an error from BAPI.
-
-  @param  error_no   the error number
-
-  @retval buf        buffer containing the error message
-*/
-const char* str_error(int error_no)
-{
-  char *msg= NULL;
-  if (error_no != ERR_OK)
-  {
-    if ((error_no > ERR_OK) && (error_no < ERROR_CODE_COUNT))
-      msg= (char*)bapi_error_messages[error_no];
-    else
-      msg= "Unknown error";
-   }
-   return msg;
-}
-
-Binary_log::Binary_log(Binary_log_driver *drv) : m_binlog_position(4),
-                                                 m_binlog_file("")
+Binary_log::Binary_log(Binary_log_driver *drv) : m_binlog_position(4), m_binlog_file("")
 {
   if (drv == NULL)
   {
     m_driver= &m_dummy_driver;
+  } else {
+    m_driver= drv;
   }
-  else
-   m_driver= drv;
 }
 
 Content_handler_pipeline *Binary_log::content_handler_pipeline(void)
@@ -67,31 +48,42 @@ int Binary_log::wait_for_next_event(mysql::Binary_log_event **event_ptr)
   bool handler_code;
   mysql::Binary_log_event *event;
 
+  mysql::Injection_queue reinjection_queue;
+
   do {
-      // Return in case of non-ERR_OK.
-      if (rc= m_driver->wait_for_next_event(&event))
-        return rc;
-
-    m_binlog_position= event->header()->next_position;
-    std::list<mysql::Content_handler *>::iterator it=
-    m_content_handlers.begin();
-
-    for(; it != m_content_handlers.end(); it++)
+    handler_code= false;
+    if (!reinjection_queue.empty())
     {
-      if (event)
-      {
-        event= (*it)->internal_process_event(event);
+      event= reinjection_queue.front();
+      reinjection_queue.pop_front();
+    } else {
+      // Return in case of non-ERR_OK.
+      if(rc= m_driver->wait_for_next_event(&event)) {
+        return rc;
       }
     }
-  } while(event == 0);
+    m_binlog_position= event->header()->next_position;
+    mysql::Content_handler *handler;
 
-  if (event_ptr)
-    *event_ptr= event;
+    for (std::list<Content_handler *>::iterator it = m_content_handlers.begin();
+            it != m_content_handlers.end();
+            it++) 
+    {
+      handler = *it;
+      if (event)
+      {
+        handler->set_injection_queue(&reinjection_queue);
+        event= handler->internal_process_event(event);
+      }
+    }
+  } while(event == 0 || !reinjection_queue.empty());
+
+  if (event_ptr) *event_ptr= event;
 
   return 0;
 }
 
-int Binary_log::set_position(const std::string &filename, ulong position)
+int Binary_log::set_position(const std::string &filename, unsigned long position)
 {
   int status= m_driver->set_position(filename, position);
   if (status == ERR_OK)
@@ -102,36 +94,38 @@ int Binary_log::set_position(const std::string &filename, ulong position)
   return status;
 }
 
-int Binary_log::set_position(ulong position)
+int Binary_log::set_position(unsigned long position)
 {
   std::string filename;
   m_driver->get_position(&filename, NULL);
   return this->set_position(filename, position);
 }
 
-ulong Binary_log::get_position(void)
+unsigned long Binary_log::get_position(void)
 {
   return m_binlog_position;
 }
 
-ulong Binary_log::get_position(std::string &filename)
+unsigned long Binary_log::get_position(std::string &filename)
 {
   m_driver->get_position(&m_binlog_file, &m_binlog_position);
   filename= m_binlog_file;
   return m_binlog_position;
 }
 
-int Binary_log::connect(ulong pos)
+int Binary_log::connect()
 {
-  return m_driver->connect((const std::string&)"", pos);
+  return m_driver->connect();
 }
 
 int Binary_log::disconnect()
 {
   return m_driver->disconnect();
 }
-int Binary_log::connect()
+
+int Binary_log::set_server_id(int server_id)
 {
-  return m_driver->connect();
+  return m_driver->set_server_id(server_id);
 }
+  
 }
