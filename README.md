@@ -1,8 +1,8 @@
 # mysql-replication-listener-win
 MySQL binlog listener fork in C++ patched for Windows
 
-[Reference](https://launchpad.net/mysql-replication-listener)
-[Forked Repo](https://github.com/bullsoft/mysql-replication-listener)
+* [Reference](https://launchpad.net/mysql-replication-listener)
+* [Forked Repo](https://github.com/bullsoft/mysql-replication-listener)
 
 ###Getting the original source code
 ```bash
