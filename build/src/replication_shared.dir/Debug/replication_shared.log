@@ -1,0 +1,34 @@
+﻿Build started 11/2/2015 3:40:29 PM.
+     1>Project "C:\cygwin64\home\htao\mysql-replication-listener-win\build\src\replication_shared.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I"C:\cygwin64\home\htao\mysql-replication-listener-win\include" /I"C:\Program Files (x86)\Visual Leak Detector\include" /Zi /nologo /W3 /WX- /Od /Ob0 /D WIN32 /D _WINDOWS /D _DEBUG /D "CMAKE_INTDIR=\"Debug\"" /D replication_shared_EXPORTS /D _WINDLL /D _MBCS /Gm- /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /GR /Fo"replication_shared.dir\Debug\\" /Fd"replication_shared.dir\Debug\vc120.pdb" /Gd /TP /errorReport:prompt "C:\cygwin64\home\htao\mysql-replication-listener-win\src\access_method_factory.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\field_iterator.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\row_of_fields.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\binlog_driver.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\basic_transaction_parser.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\tcp_driver.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\file_driver.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\binary_log.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\protocol.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\value.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\resultset_iterator.cpp" "C:\cygwin64\home\htao\mysql-replication-listener-win\src\utilities.cpp"
+         access_method_factory.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         field_iterator.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         row_of_fields.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         binlog_driver.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         basic_transaction_parser.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         tcp_driver.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         file_driver.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         binary_log.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         protocol.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         value.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         resultset_iterator.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         utilities.cpp
+     1>c:\cygwin64\home\htao\mysql-replication-listener-win\include\asio/detail/config.hpp(26): fatal error C1083: Cannot open include file: 'boost/config.hpp': No such file or directory
+         Generating Code...
+     1>Done Building Project "C:\cygwin64\home\htao\mysql-replication-listener-win\build\src\replication_shared.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:03.47
