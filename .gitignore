@@ -28,6 +28,14 @@
 *.app
 
 /build/CMakeFiles
+/build/cmake_install.cmake
+/build/x64
+/build/lib
+/build/CMakeCache.txt
 /build/src/CMakeFiles
+/build/src/Debug
+/build/src/replication_static.dir
 /build/src/cmake_install.cmake
+/build/mysql-replication-listener.opensdf
+/build/mysql-replication-listener.sdf
 

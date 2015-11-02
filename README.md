@@ -15,3 +15,7 @@ $ bzr branch lp:mysql-replication-listener
 * [boost](http://sourceforge.net/projects/boost/files/boost-binaries/)
 * [unistd.h](http://stackoverflow.com/questions/341817/is-there-a-replacement-for-unistd-h-for-windows-visual-c)
 * [getopt.h](http://www.mit.edu/afs.new/sipb/project/merakidev/include/bits/getopt.h)
+
+###Build (2 options)
+1 Use [CMake](https://cmake.org/download/) to create the VS2013 project files
+2 Use the provided VS2013 project ```build/mysql-replication-listener.sln```

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="Windows-1252"?>
+<?xml version="1.0" encoding="us-ascii"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|x64">
@@ -56,29 +56,29 @@
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
-    <PropertyGroup>
-      <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\Debug\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">replication_static.dir\Debug\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">replication</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\Release\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">replication_static.dir\Release\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">replication</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\MinSizeRel\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">replication_static.dir\MinSizeRel\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">replication</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
-      <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\RelWithDebInfo\</OutDir>
-      <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">replication_static.dir\RelWithDebInfo\</IntDir>
-      <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">replication</TargetName>
-      <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
-    </PropertyGroup>
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">replication_static.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">replication</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">replication_static.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">replication</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">replication_static.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">replication</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">C:\cygwin64\home\htao\mysql-replication-listener-win\build\lib\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">replication_static.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">replication</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">.lib</TargetExt>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <AdditionalOptions> -fPIC %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;C:\local\boost_1_57_0;C:\cygwin64\home\htao\pthread-win32;C:\openssl-1.0.1l-vs2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Debug/</AssemblerListingLocation>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -90,7 +90,7 @@
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WINDOWS;_DEBUG;CMAKE_INTDIR="Debug";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
@@ -109,7 +109,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
       <AdditionalOptions> -fPIC %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;C:\local\boost_1_57_0;C:\cygwin64\home\htao\pthread-win32;C:\openssl-1.0.1l-vs2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>Release/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -119,9 +119,10 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="Release";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"Release\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -139,7 +140,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|x64'">
     <ClCompile>
       <AdditionalOptions> -fPIC %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;C:\local\boost_1_57_0;C:\cygwin64\home\htao\pthread-win32;C:\openssl-1.0.1l-vs2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>MinSizeRel/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <ExceptionHandling>Sync</ExceptionHandling>
@@ -149,9 +150,10 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="MinSizeRel";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
-      <DebugInformationFormat></DebugInformationFormat>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR=\"MinSizeRel\";%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -169,7 +171,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
       <AdditionalOptions> -fPIC %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\cygwin64\home\htao\mysql-replication-listener-win\include;C:\local\boost_1_57_0;C:\cygwin64\home\htao\pthread-win32;C:\openssl-1.0.1l-vs2013\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AssemblerListingLocation>RelWithDebInfo/</AssemblerListingLocation>
       <CompileAs>CompileAsCpp</CompileAs>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
@@ -180,7 +182,7 @@
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <RuntimeTypeInfo>true</RuntimeTypeInfo>
       <WarningLevel>Level3</WarningLevel>
-      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_WIN32;WIN32;_WINDOWS;NDEBUG;CMAKE_INTDIR="RelWithDebInfo";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ObjectFileName>$(IntDir)</ObjectFileName>
     </ClCompile>
     <ResourceCompile>
@@ -253,21 +255,21 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\access_method_factory.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\field_iterator.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\row_of_fields.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binlog_driver.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\basic_transaction_parser.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\tcp_driver.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\file_driver.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binary_log.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\protocol.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\value.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binlog_event.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\resultset_iterator.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\basic_content_handler.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\utilities.cpp"  />
-    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\decimal.cpp"  />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\access_method_factory.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\field_iterator.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\row_of_fields.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binlog_driver.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\basic_transaction_parser.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\tcp_driver.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\file_driver.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binary_log.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\protocol.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\value.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binlog_event.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\resultset_iterator.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\basic_content_handler.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\utilities.cpp" />
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\decimal.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="C:/cygwin64/home/htao/mysql-replication-listener-win/build/ZERO_CHECK.vcxproj">
