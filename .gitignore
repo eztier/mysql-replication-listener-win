@@ -28,10 +28,10 @@
 *.app
 
 /build/CMakeFiles
-/build/cmake_install.cmake
+/build/cmake_install.cmake*
 /build/x64
 /build/lib
-/build/CMakeCache.txt
+/build/CMakeCache.txt*
 /build/src/CMakeFiles
 /build/src/Debug
 /build/src/replication_static.dir
