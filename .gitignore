@@ -30,6 +30,7 @@
 /build/CMakeFiles
 /build/cmake_install.cmake*
 /build/x64
+/build/src/examples/x64
 /build/lib
 /build/CMakeCache.txt*
 /build/src/CMakeFiles
