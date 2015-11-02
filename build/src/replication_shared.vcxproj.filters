@@ -1,0 +1,58 @@
+﻿<?xml version="1.0" encoding="Windows-1252"?>
+<Project ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\access_method_factory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\field_iterator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\row_of_fields.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binlog_driver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\basic_transaction_parser.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\tcp_driver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\file_driver.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binary_log.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\protocol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\value.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\binlog_event.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\resultset_iterator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\basic_content_handler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\utilities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\decimal.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="C:\cygwin64\home\htao\mysql-replication-listener-win\src\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{C06628D7-CB10-40E7-8945-78838B3F2086}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
