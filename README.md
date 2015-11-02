@@ -17,5 +17,5 @@ $ bzr branch lp:mysql-replication-listener
 * [getopt.h](http://www.mit.edu/afs.new/sipb/project/merakidev/include/bits/getopt.h)
 
 ###Build (2 options)
-1 Use [CMake](https://cmake.org/download/) to create the VS2013 project files
-2 Use the provided VS2013 project ```build/mysql-replication-listener.sln```
+1. Use [CMake](https://cmake.org/download/) to create the VS2013 project files
+2. Use the provided VS2013 project ```build/mysql-replication-listener.sln```
