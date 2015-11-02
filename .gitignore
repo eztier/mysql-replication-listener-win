@@ -35,6 +35,7 @@
 /build/src/CMakeFiles
 /build/src/Debug
 /build/src/replication_static.dir
+/build/src/replication_shared.dir
 /build/src/cmake_install.cmake
 /build/mysql-replication-listener.opensdf
 /build/mysql-replication-listener.sdf
