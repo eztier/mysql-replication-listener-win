@@ -39,7 +39,7 @@ int main(int argc, char** argv) {
     std::cerr << "Usage: basic-2 <uri>" << std::endl;
     exit(2);
   }
-
+  //expected uri: mysql://replicator:agentpass123@clclcdcdvm001:3306
   Binary_log binlog(create_transport(argv[1]));
   binlog.connect();
 
