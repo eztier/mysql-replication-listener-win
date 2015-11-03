@@ -45,10 +45,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.Debug|Win32.ActiveCfg = Debug|x64
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.Debug|x64.ActiveCfg = Debug|x64
-		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.Debug|x64.Build.0 = Debug|x64
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.MinSizeRel|Mixed Platforms.ActiveCfg = MinSizeRel|x64
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.MinSizeRel|Mixed Platforms.Build.0 = MinSizeRel|x64
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.MinSizeRel|Win32.ActiveCfg = MinSizeRel|x64
@@ -65,7 +63,6 @@ Global
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{3CDE26A2-1697-47C5-A0CE-D94DAA6A95A6}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{8F4F716F-DD98-40F2-BD72-B09A51DCFE77}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{8F4F716F-DD98-40F2-BD72-B09A51DCFE77}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{8F4F716F-DD98-40F2-BD72-B09A51DCFE77}.Debug|Win32.ActiveCfg = Debug|x64
 		{8F4F716F-DD98-40F2-BD72-B09A51DCFE77}.Debug|x64.ActiveCfg = Debug|x64
 		{8F4F716F-DD98-40F2-BD72-B09A51DCFE77}.MinSizeRel|Mixed Platforms.ActiveCfg = MinSizeRel|x64
@@ -81,10 +78,8 @@ Global
 		{8F4F716F-DD98-40F2-BD72-B09A51DCFE77}.RelWithDebInfo|Win32.ActiveCfg = RelWithDebInfo|x64
 		{8F4F716F-DD98-40F2-BD72-B09A51DCFE77}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.Debug|Win32.ActiveCfg = Debug|x64
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.Debug|x64.ActiveCfg = Debug|x64
-		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.Debug|x64.Build.0 = Debug|x64
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.MinSizeRel|Mixed Platforms.ActiveCfg = MinSizeRel|x64
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.MinSizeRel|Mixed Platforms.Build.0 = MinSizeRel|x64
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.MinSizeRel|Win32.ActiveCfg = MinSizeRel|x64
@@ -101,10 +96,8 @@ Global
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{882080EF-0C4F-4C89-AEC7-029B7BC05471}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{E1635DD8-1FF9-49BD-84BF-050602D16568}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{E1635DD8-1FF9-49BD-84BF-050602D16568}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{E1635DD8-1FF9-49BD-84BF-050602D16568}.Debug|Win32.ActiveCfg = Debug|x64
 		{E1635DD8-1FF9-49BD-84BF-050602D16568}.Debug|x64.ActiveCfg = Debug|x64
-		{E1635DD8-1FF9-49BD-84BF-050602D16568}.Debug|x64.Build.0 = Debug|x64
 		{E1635DD8-1FF9-49BD-84BF-050602D16568}.MinSizeRel|Mixed Platforms.ActiveCfg = MinSizeRel|x64
 		{E1635DD8-1FF9-49BD-84BF-050602D16568}.MinSizeRel|Mixed Platforms.Build.0 = MinSizeRel|x64
 		{E1635DD8-1FF9-49BD-84BF-050602D16568}.MinSizeRel|Win32.ActiveCfg = MinSizeRel|x64
@@ -141,10 +134,9 @@ Global
 		{E9348DC3-582E-4A52-98C5-5C9E5039975E}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{E9348DC3-582E-4A52-98C5-5C9E5039975E}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.Debug|Mixed Platforms.ActiveCfg = Debug|x64
-		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.Debug|Mixed Platforms.Build.0 = Debug|x64
 		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.Debug|Win32.ActiveCfg = Debug|Win32
 		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.Debug|Win32.Build.0 = Debug|Win32
-		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.Debug|x64.ActiveCfg = Debug|Win32
+		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.Debug|x64.ActiveCfg = Debug|x64
 		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.MinSizeRel|Mixed Platforms.ActiveCfg = Release|Win32
 		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.MinSizeRel|Mixed Platforms.Build.0 = Release|Win32
 		{66B8B019-9E66-45C8-BA1A-5C0B4C90004F}.MinSizeRel|Win32.ActiveCfg = Release|Win32
